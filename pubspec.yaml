@@ -1,5 +1,5 @@
 name: fl_border_gradient
-description: "A new Flutter package project."
+description: "A professional Flutter package for stunning gradient borders. Supports animated spinning borders, glowing neon effects, dashed patterns, and multiple gradient types (linear, sweep, radial, diagonal)."
 version: 1.0.0
 homepage: https://github.com/ShithinCherathuparambil/fl_gradient_border
 repository: https://github.com/ShithinCherathuparambil/fl_gradient_border
