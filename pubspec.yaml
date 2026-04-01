@@ -1,7 +1,8 @@
 name: fl_border_gradient
 description: "A new Flutter package project."
 version: 1.0.0
-homepage:
+homepage: https://github.com/ShithinCherathuparambil/fl_gradient_border
+repository: https://github.com/ShithinCherathuparambil/fl_gradient_border
 
 environment:
   sdk: ^3.11.3
