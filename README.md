@@ -1,6 +1,6 @@
 # fl_border_gradient
 
-[![pub package](https://img.shields.io/badge/pub-v1.0.0-blue.svg)](https://pub.dev/packages/fl_border_gradient)
+[![pub package](https://img.shields.io/badge/pub-v1.1.0-blue.svg)](https://pub.dev/packages/fl_border_gradient)
 [![license](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![platform](https://img.shields.io/badge/platform-android%20|%20ios%20|%20web%20|%20macos%20|%20windows%20|%20linux-blue.svg)](https://flutter.dev)
 
@@ -15,6 +15,8 @@ A powerful and flexible Flutter package for creating stunning gradient borders f
 *   **Glowing Effects**: Add a perfectly synced blurred glow underneath your gradient borders.
 *   **Dashed Borders**: Support for dashed and dotted borders with gradient flow.
 *   **Universal Compatibility**: Works with `BoxDecoration`, `BorderRadius`, and all shapes (Rectangle, Circle).
+*   **Per-side borders**: Draw a gradient on any combination of edges (L-shape, top bar, etc.) with `GradientSidesBoxBorder`.
+*   **Theming**: Optional `FlBorderGradientTheme` via `ThemeData.extensions` for shared defaults.
 
 ---
 
@@ -24,7 +26,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  fl_border_gradient: ^1.0.0
+  fl_border_gradient: ^1.1.0
 ```
 
 Import the package:
@@ -123,6 +125,89 @@ GradientBoxBorder(
   dashPattern: const [10.0, 5.0], // 10px dash, 5px gap
 )
 ```
+
+### 6. Per-side gradient border (`GradientSidesBoxBorder`)
+Use `GradientSidesBoxBorder` when you only want specific edges (for example a top accent or an L-shaped frame). Partial sides are drawn on **axis-aligned rectangles** with **no border radius**. When all four sides are enabled, behavior matches `GradientBoxBorder` (including circles, rounded rects, and dashes).
+
+```dart
+Container(
+  height: 56,
+  width: double.infinity,
+  decoration: BoxDecoration(
+    border: GradientSidesBoxBorder.linear(
+      colors: const [Colors.deepPurple, Colors.cyan],
+      width: 3,
+      includeTop: true,
+      includeLeft: true,
+      includeRight: false,
+      includeBottom: false,
+    ),
+  ),
+  child: const Center(child: Text('Top + left gradient edges')),
+)
+```
+
+---
+
+## 🎨 Theme defaults (`FlBorderGradientTheme`)
+
+Register `FlBorderGradientTheme` on `MaterialApp` / `ThemeData` to share default colors and widths:
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    extensions: const [
+      FlBorderGradientTheme(
+        defaultGradientColors: [Color(0xFF6366F1), Color(0xFFA855F7)],
+        defaultBorderWidth: 2.5,
+        defaultGlowSize: 10,
+        defaultGlowOpacity: 0.45,
+      ),
+    ],
+  ),
+  home: YourHome(),
+);
+```
+
+Read values anywhere:
+
+```dart
+final t = FlBorderGradientTheme.of(context);
+Container(
+  decoration: BoxDecoration(
+    border: GradientBoxBorder(
+      colors: t.defaultGradientColors,
+      width: t.defaultBorderWidth,
+    ),
+  ),
+  child: const Text('Themed border'),
+);
+```
+
+---
+
+## 🖼️ `BoxDecoration` with image and gradient border
+
+`BoxDecoration` paints **in order**: `color` → `gradient` → `image` → then border. A gradient border stacks cleanly on top of a background image.
+
+```dart
+BoxDecoration(
+  image: DecorationImage(image: AssetImage('assets/bg.png'), fit: BoxFit.cover),
+  border: GradientBoxBorder(
+    colors: const [Colors.white, Colors.blueAccent],
+    width: 2,
+  ),
+)
+```
+
+---
+
+## ♿ Accessibility
+
+Gradient borders, spinning animations, and glow are **visual decoration**. Do not rely on color or motion alone to convey critical meaning.
+
+* `AnimatedGradientBorder` defaults `excludeBorderFromSemantics` to `true` so assistive technologies focus on the `child` (set to `false` if you intentionally expose the ring).
+* `GlowingGradientBorder` defaults `excludeGlowFromSemantics` to `true` for the blur layer under the real border.
 
 ---
 

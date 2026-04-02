@@ -27,6 +27,9 @@ class GlowingGradientBorder extends StatelessWidget {
   /// How intense the glow is.
   final double glowOpacity;
 
+  /// When true, the glow layer is excluded from the semantics tree.
+  final bool excludeGlowFromSemantics;
+
   const GlowingGradientBorder({
     super.key,
     required this.child,
@@ -35,23 +38,26 @@ class GlowingGradientBorder extends StatelessWidget {
     this.shape = BoxShape.rectangle,
     this.glowSize = 8.0,
     this.glowOpacity = 0.5,
+    this.excludeGlowFromSemantics = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    Widget glow = CustomPaint(
+      painter: _GlowPainter(
+        border: border,
+        borderRadius: borderRadius,
+        shape: shape,
+        glowSize: glowSize,
+        glowOpacity: glowOpacity,
+      ),
+    );
+    if (excludeGlowFromSemantics) {
+      glow = ExcludeSemantics(child: glow);
+    }
     return Stack(
       children: [
-        Positioned.fill(
-          child: CustomPaint(
-            painter: _GlowPainter(
-              border: border,
-              borderRadius: borderRadius,
-              shape: shape,
-              glowSize: glowSize,
-              glowOpacity: glowOpacity,
-            ),
-          ),
-        ),
+        Positioned.fill(child: glow),
         Container(
           decoration: BoxDecoration(
             shape: shape,

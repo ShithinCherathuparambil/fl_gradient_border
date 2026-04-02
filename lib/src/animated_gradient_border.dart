@@ -32,6 +32,10 @@ class AnimatedGradientBorder extends StatefulWidget {
   /// The stops for the gradient colors.
   final List<double>? stops;
 
+  /// When true, the animated border ring is omitted from the semantics tree so
+  /// assistive technologies focus on [child]. The border is decorative motion.
+  final bool excludeBorderFromSemantics;
+
   const AnimatedGradientBorder({
     super.key,
     required this.child,
@@ -42,6 +46,7 @@ class AnimatedGradientBorder extends StatefulWidget {
     this.animationTime = const Duration(seconds: 3),
     this.dashPattern,
     this.stops,
+    this.excludeBorderFromSemantics = true,
   });
 
   @override
@@ -81,7 +86,7 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        return Container(
+        final Widget borderLayer = DecoratedBox(
           decoration: BoxDecoration(
             shape: widget.shape,
             borderRadius: widget.borderRadius,
@@ -93,7 +98,22 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
               transform: GradientRotation(_controller.value * 2 * math.pi),
             ),
           ),
-          child: child,
+          child: const SizedBox.expand(),
+        );
+
+        final Widget decorated = widget.excludeBorderFromSemantics
+            ? ExcludeSemantics(child: borderLayer)
+            : borderLayer;
+
+        return Stack(
+          fit: StackFit.passthrough,
+          children: [
+            Positioned.fill(child: decorated),
+            Padding(
+              padding: EdgeInsets.all(widget.borderWidth),
+              child: child,
+            ),
+          ],
         );
       },
       child: widget.child,
