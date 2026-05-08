@@ -4,3 +4,4 @@ export 'src/glowing_gradient_border.dart';
 export 'src/gradient_box_border.dart';
 export 'src/gradient_sides_box_border.dart';
 
+export 'src/opposite_directional_gradient_border.dart';

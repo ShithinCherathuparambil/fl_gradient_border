@@ -64,6 +64,78 @@ class ExamplePage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _buildSection(
+              title: "Opposite Directional Border (Horizontal)",
+              child: Center(
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 90,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFF2C2C2C),
+                      border: OppositeDirectionalGradientBorder(
+                        colors: [
+                          Color(0x000059FF),
+                          Color(0x000059FF),
+                          Color(0xCC4D7CFF),
+                          Color(0x000059FF),
+                          Color(0x000059FF),
+                        ],
+                        stops: [0.0, 0.5, 1.0],
+                        width: 1.2,
+                        axis: Axis.horizontal,
+                        alignment: BorderGradientAlignment.start,
+                        reverseSecondSide: false,
+                      ),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        "March",
+                        style: TextStyle(
+                          color: Color(0xFFE8EEFF),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 30,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildSection(
+              title: "Opposite Directional Border (Vertical)",
+              child: Center(
+                child: Container(
+                  width: double.infinity,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: Color(0xFF2C2C2C),
+                    borderRadius: BorderRadius.circular(20),
+                    border: OppositeDirectionalGradientBorder(
+                      colors: [
+                        Color(0x000059FF),
+                        Color(0x990059FF),
+                        Color(0x000059FF),
+                      ],
+                      width: 1.0,
+                      axis: Axis.vertical,
+                      reverseSecondSide: true,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "Vertical Flow",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildSection(
               title: "Diagonal Border (With Mixing Stops)",
               child: Container(
                 height: 100,
@@ -71,11 +143,11 @@ class ExamplePage extends StatelessWidget {
                   color: const Color(0xFF2C2C2C),
                   borderRadius: BorderRadius.circular(12),
                   border: GradientBoxBorder.diagonal(
-                    colors: const [Colors.redAccent, Colors.transparent],
-                    stops: const [
-                      0.5,
-                      0.9,
-                    ], // Controls where mixing starts/stops!
+                    // Change these two colors to control the diagonal border palette.
+                    colors: const [Color(0xFFFF5A5F), Colors.transparent],
+                    // Use 0.30, 0.40, 0.50, 0.55 for 30:70, 40:60, 50:50, 55:45.
+                    colorRatio: 0.20,
+                    mixBand: 0.2, // Crisp corner transitions (no soft spill).
                     width: 1,
                   ),
                 ),
@@ -118,6 +190,7 @@ class ExamplePage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   border: GradientBoxBorder.radial(
                     colors: const [Colors.orange, Colors.deepOrange],
+                    center: Alignment.topLeft,
                     radius: 0.8,
                     width: 3.0,
                   ),
@@ -144,7 +217,7 @@ class ExamplePage extends StatelessWidget {
                       Colors.green,
                       Colors.yellow,
                       Colors.red,
-                      Colors.blue
+                      Colors.blue,
                     ],
                     width: 3.0,
                   ),
@@ -199,7 +272,10 @@ class ExamplePage extends StatelessWidget {
                   child: const Center(
                     child: Text(
                       "Neon Glow!",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

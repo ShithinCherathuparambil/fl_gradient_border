@@ -53,9 +53,20 @@ class GradientBoxBorder extends BoxBorder {
   /// Convenience constructor to create a gradient border drawn across corners.
   /// The first color spans the top-left and bottom-right corners.
   /// The second color spans the top-right and bottom-left corners.
+  ///
+  /// For exactly two colors:
+  /// - pass 2 [stops] values for coarse mixing control, or
+  /// - pass 5 [stops] values to fully control each diagonal segment length.
+  /// - or pass [colorRatio] for a simple first-color/second-color split
+  ///   (e.g. 0.3 => 30:70, 0.5 => 50:50, 0.55 => 55:45).
+  ///
+  /// Use [mixBand] to control how much soft blending happens at transitions.
+  /// Lower values make edges sharper and colors more precise.
   factory GradientBoxBorder.diagonal({
     required List<Color> colors,
     List<double>? stops,
+    double? colorRatio,
+    double mixBand = 0.02,
     double width = 1.0,
     List<double>? dashPattern,
     TileMode tileMode = TileMode.clamp,
@@ -64,30 +75,104 @@ class GradientBoxBorder extends BoxBorder {
       colors.length >= 2,
       'The diagonal factory constructor requires at least 2 colors.',
     );
+    assert(
+      colorRatio == null || (colorRatio >= 0.0 && colorRatio <= 1.0),
+      'colorRatio must be between 0.0 and 1.0.',
+    );
+    assert(
+      !(colorRatio != null && stops != null),
+      'Provide either colorRatio or stops, not both.',
+    );
+    assert(mixBand >= 0.0 && mixBand <= 0.5, 'mixBand must be between 0 and 0.5.');
     // If exactly 2 colors are provided, we map them to the 4 corners:
     // Color 1: top-left & bottom-right
     // Color 2: top-right & bottom-left
     final Gradient gradient;
     if (colors.length == 2) {
-      if (stops != null && stops.length == 2) {
+      if (colorRatio != null) {
+        final double split = (colorRatio * 0.5).clamp(0.0, 0.5);
+        final double halfBand = (mixBand * 0.5).clamp(0.0, 0.25);
+        const int sampleCount = 64;
+        final List<double> sampledStops = List<double>.generate(
+          sampleCount + 1,
+          (i) => i / sampleCount,
+          growable: false,
+        );
+        final List<Color> sampledColors = sampledStops.map((t) {
+          final double u = t % 0.5;
+          final double mixValue;
+          if (u < split - halfBand) {
+            mixValue = 0.0;
+          } else if (u <= split + halfBand) {
+            final double width = (2 * halfBand).clamp(1e-9, 1.0);
+            mixValue = ((u - (split - halfBand)) / width).clamp(0.0, 1.0);
+          } else if (u < 0.5 - halfBand) {
+            mixValue = 1.0;
+          } else {
+            final double width = (2 * halfBand).clamp(1e-9, 1.0);
+            mixValue = (1.0 - ((u - (0.5 - halfBand)) / width)).clamp(0.0, 1.0);
+          }
+          return Color.lerp(colors[0], colors[1], mixValue)!;
+        }).toList(growable: false);
+
+        gradient = SweepGradient(
+          colors: sampledColors,
+          stops: sampledStops,
+          transform: const GradientRotation(0),
+          tileMode: tileMode,
+        );
+      } else
+      if (stops != null && stops.length == 5) {
+        // Advanced control: caller fully controls each segment.
+        gradient = SweepGradient(
+          colors: [colors[0], colors[1], colors[0], colors[1], colors[0]],
+          stops: stops,
+          transform: const GradientRotation(3.1415926535897932 / 4),
+          tileMode: tileMode,
+        );
+      } else if (stops != null && stops.length == 2) {
         // Map the 2-point linear stops geometrically across the four corners.
         final s1 = stops[0].clamp(0.0, 1.0);
         final s2 = stops[1].clamp(0.0, 1.0);
         final c1 = colors[0];
         final c2 = colors[1];
-        
+
         gradient = SweepGradient(
           colors: [
-            c1, c1, c2, c2,
-            c2, c2, c1, c1,
-            c1, c1, c2, c2,
-            c2, c2, c1, c1,
+            c1,
+            c1,
+            c2,
+            c2,
+            c2,
+            c2,
+            c1,
+            c1,
+            c1,
+            c1,
+            c2,
+            c2,
+            c2,
+            c2,
+            c1,
+            c1,
           ],
           stops: [
-            0.0, s1 * 0.25, s2 * 0.25, 0.25,
-            0.25, 0.25 + (1 - s2) * 0.25, 0.25 + (1 - s1) * 0.25, 0.50,
-            0.50, 0.50 + s1 * 0.25, 0.50 + s2 * 0.25, 0.75,
-            0.75, 0.75 + (1 - s2) * 0.25, 0.75 + (1 - s1) * 0.25, 1.0,
+            0.0,
+            s1 * 0.25,
+            s2 * 0.25,
+            0.25,
+            0.25,
+            0.25 + (1 - s2) * 0.25,
+            0.25 + (1 - s1) * 0.25,
+            0.50,
+            0.50,
+            0.50 + s1 * 0.25,
+            0.50 + s2 * 0.25,
+            0.75,
+            0.75,
+            0.75 + (1 - s2) * 0.25,
+            0.75 + (1 - s1) * 0.25,
+            1.0,
           ],
           transform: const GradientRotation(3.1415926535897932 / 4),
           tileMode: tileMode,
@@ -95,13 +180,7 @@ class GradientBoxBorder extends BoxBorder {
       } else {
         // Default perfectly blended 4-corner sweep
         gradient = SweepGradient(
-          colors: [
-            colors[0],
-            colors[1],
-            colors[0],
-            colors[1],
-            colors[0],
-          ],
+          colors: [colors[0], colors[1], colors[0], colors[1], colors[0]],
           stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
           transform: const GradientRotation(3.1415926535897932 / 4),
           tileMode: tileMode,
@@ -144,13 +223,7 @@ class GradientBoxBorder extends BoxBorder {
       width: width,
       dashPattern: dashPattern,
       gradient: SweepGradient(
-        colors: [
-          colors[0],
-          colors[1],
-          colors[0],
-          colors[1],
-          colors[0],
-        ],
+        colors: [colors[0], colors[1], colors[0], colors[1], colors[0]],
         stops: stops ?? const [0.0, 0.25, 0.5, 0.75, 1.0],
         tileMode: tileMode,
         transform: transform,
@@ -221,10 +294,12 @@ class GradientBoxBorder extends BoxBorder {
   bool get isUniform => true;
 
   @override
-  BorderSide get top => BorderSide(width: width, color: const Color(0x00000000));
+  BorderSide get top =>
+      BorderSide(width: width, color: const Color(0x00000000));
 
   @override
-  BorderSide get bottom => BorderSide(width: width, color: const Color(0x00000000));
+  BorderSide get bottom =>
+      BorderSide(width: width, color: const Color(0x00000000));
 
   @override
   ShapeBorder scale(double t) {
@@ -274,7 +349,7 @@ class GradientBoxBorder extends BoxBorder {
     BorderRadius? borderRadius,
   ) {
     final Path path = Path();
-    
+
     // Inflate slightly because stroke paints centered on the path
     final Rect strokeRect = rect.deflate(width / 2);
 

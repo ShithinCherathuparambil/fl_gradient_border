@@ -1,3 +1,10 @@
+## 1.2.0
+
+* Added precise ratio control for diagonal two-color borders via `colorRatio` (e.g. `0.30`, `0.40`, `0.50`, `0.55`).
+* Added `mixBand` for controlling diagonal transition softness (including crisp `mixBand: 0.0` corners).
+* Improved ratio rendering to keep opposite corners visually balanced with seamless wrap behavior.
+* Expanded tests for diagonal ratio and sharp-corner scenarios.
+
 ## 1.1.0
 
 * Added `GradientSidesBoxBorder` for gradient strokes on selected edges (all four sides delegate to `GradientBoxBorder`).
